@@ -1,0 +1,116 @@
+name: Test
+
+on:
+  pull_request:
+  push:
+  workflow_dispatch:
+    inputs:
+      publish:
+        default: false
+        description: Publish package
+        required: false 
+        type: boolean
+
+jobs:
+  build:
+    name: Build native libraries
+    strategy:
+      matrix:
+        include:
+          - library: libeth_pairings.so
+            os: ubuntu
+            rid: linux-arm64
+            target: aarch64-unknown-linux-gnu
+          - library: libeth_pairings.so
+            os: ubuntu
+            rid: linux-x64
+            target: x86_64-unknown-linux-gnu
+          - library: libeth_pairings.dylib
+            os: macos
+            rid: osx-arm64
+            target: aarch64-apple-darwin
+          - library: libeth_pairings.dylib
+            os: macos
+            rid: osx-x64
+            target: x86_64-apple-darwin
+          - library: eth_pairings.dll
+            os: windows
+            rid: win-x64
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}-latest
+    steps:
+      - name: Check out eip1962 repository
+        uses: actions/checkout@v3
+        with:
+          repository: nethermindeth/eip1962
+          ref: ${{ matrix.target == 'aarch64-unknown-linux-gnu' && 'feature/bindings-linux-arm64' || 'feature/bindings' }}
+          path: eth_pairings
+
+      - name: Set up GNU C compiler for arm64
+        if: matrix.target == 'aarch64-unknown-linux-gnu'
+        run: sudo apt-get install gcc-aarch64-linux-gnu -y
+
+      - name: Set up Rust
+        run: |
+          rustup update
+          rustup target add ${{ matrix.target }}
+
+      - name: Build
+        working-directory: eth_pairings
+        run: cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ matrix.rid }}
+          path: eth_pairings/target/${{ matrix.target }}/release/${{ matrix.library }}
+          retention-days: 2
+          if-no-files-found: error
+
+  test:
+    name: Build package
+    needs: build
+    env:
+      BUILD_CONFIG: release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out eth-pairings-bindings repository
+        uses: actions/checkout@v3
+
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: src/Nethermind.Crypto.Pairings/runtimes
+
+      - name: Move artifacts
+        working-directory: src/Nethermind.Crypto.Pairings/runtimes
+        run: |
+          mv -f linux-arm64/libeth_pairings.so linux-arm64/native/libeth_pairings.so
+          mv -f linux-x64/libeth_pairings.so linux-x64/native/libeth_pairings.so
+          mv -f osx-arm64/libeth_pairings.dylib osx-arm64/native/libeth_pairings.dylib
+          mv -f osx-x64/libeth_pairings.dylib osx-x64/native/libeth_pairings.dylib
+          mv -f win-x64/eth_pairings.dll win-x64/native/eth_pairings.dll
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7
+
+      - name: Install dependencies
+        working-directory: src
+        run: dotnet restore
+
+      - name: Build
+        working-directory: src/Nethermind.Crypto.Pairings
+        run: dotnet build -c ${{ env.BUILD_CONFIG }} --no-restore -p:ContinuousIntegrationBuild=true
+    
+      #- name: Test
+      #  working-directory: src/Nethermind.Crypto.Pairings.Test
+      #  run: dotnet test -c ${{ env.BUILD_CONFIG }} --no-restore
+
+      - name: Publish
+        if: ${{ inputs.publish }}
+        working-directory: src/Nethermind.Crypto.Pairings
+        run: |
+          dotnet pack -c ${{ env.BUILD_CONFIG }} --no-build
+          dotnet nuget push bin/${{ env.BUILD_CONFIG }}/*.nupkg -k ${{ secrets.NUGET_API_KEY }} -s https://api.nuget.org/v3/index.json
