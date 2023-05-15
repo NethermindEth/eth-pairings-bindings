@@ -10,9 +10,15 @@ public static class Pairings
 {
     private const string LibraryName = "eth_pairings";
 
-    static Pairings() => NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadLibrary);
+    static Pairings() {
+        NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadLibrary);
 
-    [DllImport(LibraryName)]
+
+
+
+    }
+
+    [DllImport(LibraryName, SetLastError = true)]
     private static extern unsafe uint eip196_perform_operation(
         byte operation,
         byte* input,
@@ -22,7 +28,7 @@ public static class Pairings
         byte* error,
         ref int errorLength);
 
-    [DllImport(LibraryName)]
+    [DllImport(LibraryName, SetLastError = true)]
     private static extern unsafe uint eip2537_perform_operation(
         byte operation,
         byte* input,
@@ -119,7 +125,10 @@ public static class Pairings
 
         var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
 
-        return NativeLibrary.Load(
+        handle = NativeLibrary.Load(
             Path.Combine("runtimes", $"{platform}-{arch}", "native", libraryName), assembly, searchPath);
+        if(handle != IntPtr.Zero)
+            return handle;
+        else throw new DllNotFoundException($"Could not load {libraryName} from {platform}-{arch} folder : DllMissing or DependencyMissing");
     }
 }
