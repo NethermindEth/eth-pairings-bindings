@@ -10,15 +10,9 @@ public static class Pairings
 {
     private const string LibraryName = "eth_pairings";
 
-    static Pairings() {
-        NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadLibrary);
+    public static void TryLoadAndResolveDlls() => LoadLibrary(LibraryName, Assembly.GetExecutingAssembly());
 
-
-
-
-    }
-
-    [DllImport(LibraryName, SetLastError = true)]
+    [DllImport(LibraryName)]
     private static extern unsafe uint eip196_perform_operation(
         byte operation,
         byte* input,
@@ -28,7 +22,7 @@ public static class Pairings
         byte* error,
         ref int errorLength);
 
-    [DllImport(LibraryName, SetLastError = true)]
+    [DllImport(LibraryName)]
     private static extern unsafe uint eip2537_perform_operation(
         byte operation,
         byte* input,
@@ -98,7 +92,7 @@ public static class Pairings
 
     public static bool BlsMapToG2(ReadOnlySpan<byte> input, Span<byte> output) => BlsOp(9, input, output);
 
-    private static nint LoadLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+    private static nint LoadLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath = null)
     {
         string platform;
 
@@ -125,10 +119,7 @@ public static class Pairings
 
         var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
 
-        handle = NativeLibrary.Load(
+        return NativeLibrary.Load(
             Path.Combine("runtimes", $"{platform}-{arch}", "native", libraryName), assembly, searchPath);
-        if(handle != IntPtr.Zero)
-            return handle;
-        else throw new DllNotFoundException($"Could not load {libraryName} from {platform}-{arch} folder : DllMissing or DependencyMissing");
     }
 }
