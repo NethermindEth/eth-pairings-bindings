@@ -12,6 +12,8 @@ public static class Pairings
 
     public static void TryLoadAndResolveDlls() => LoadLibrary(LibraryName, Assembly.GetExecutingAssembly());
 
+    static Pairings() => NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadLibrary);
+    
     [DllImport(LibraryName)]
     private static extern unsafe uint eip196_perform_operation(
         byte operation,
