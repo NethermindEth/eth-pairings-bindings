@@ -48,7 +48,7 @@ jobs:
 
       - name: Set up GNU C compiler for arm64
         if: matrix.target == 'aarch64-unknown-linux-gnu'
-        run: sudo apt-get install gcc-aarch64-linux-gnu -y
+        run: sudo apt-get update && sudo apt-get install -y gcc-aarch64-linux-gnu
 
       - name: Set up Rust
         run: |
