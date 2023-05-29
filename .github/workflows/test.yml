@@ -58,8 +58,9 @@ jobs:
       - name: Build
         working-directory: eth_pairings
         run: |
-          ldd --version
-          cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
+          docker pull rust:buster
+          docker run --rm --user "$(id -u)":"$(id -g)" -v "$PWD":$GITHUB_WORKSPACE/eth_pairings -w $GITHUB_WORKSPACE/eth_pairings rust:buster cargo build --release--target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
+          #cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
