@@ -58,6 +58,7 @@ jobs:
       - name: Build
         working-directory: eth_pairings
         run: |
+          ldd --version
           cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
 
       - name: Upload artifact
