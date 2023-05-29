@@ -60,7 +60,7 @@ jobs:
         run: |
           export CARGO_TARGET_X86_64_UNKNOWN_LINUX_MUSL_LINKER=musl-gcc
           cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
-          ls target/${{ matrix.target }}/release
+          ls target/${{ matrix.target }}/release/build
           echo "---"
           ls target
 
