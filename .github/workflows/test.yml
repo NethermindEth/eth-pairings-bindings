@@ -25,18 +25,18 @@ jobs:
             os: ubuntu
             rid: linux-x64
             target: x86_64-unknown-linux-musl
-          - library: libeth_pairings.dylib
-            os: macos
-            rid: osx-arm64
-            target: aarch64-apple-darwin
-          - library: libeth_pairings.dylib
-            os: macos
-            rid: osx-x64
-            target: x86_64-apple-darwin
-          - library: eth_pairings.dll
-            os: windows
-            rid: win-x64
-            target: x86_64-pc-windows-msvc
+          #- library: libeth_pairings.dylib
+          #  os: macos
+          #  rid: osx-arm64
+          #  target: aarch64-apple-darwin
+          #- library: libeth_pairings.dylib
+          #  os: macos
+          #  rid: osx-x64
+          #  target: x86_64-apple-darwin
+          #- library: eth_pairings.dll
+          #  os: windows
+          #  rid: win-x64
+          #  target: x86_64-pc-windows-msvc
     runs-on: ${{ matrix.os }}-latest
     steps:
       - name: Check out eip1962 repository
@@ -57,7 +57,11 @@ jobs:
 
       - name: Build
         working-directory: eth_pairings
-        run: cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
+        run: |
+          cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
+          ls target/${{ matrix.target }}/release
+          echo "---"
+          ls target
 
       - name: Upload artifact
         uses: actions/upload-artifact@v3
