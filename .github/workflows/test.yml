@@ -37,7 +37,7 @@ jobs:
           #  os: windows
           #  rid: win-x64
           #  target: x86_64-pc-windows-msvc
-    runs-on: ${{ matrix.os }}-18.04
+    runs-on: ${{ matrix.os }}-20.04
     steps:
       - name: Check out eip1962 repository
         uses: actions/checkout@v3
