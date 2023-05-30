@@ -18,26 +18,26 @@ jobs:
       matrix:
         include:
           - library: libeth_pairings.so
-            os: ubuntu
+            os: ubuntu-20.04
             rid: linux-arm64
             target: aarch64-unknown-linux-gnu
           - library: libeth_pairings.so
-            os: ubuntu
+            os: ubuntu-20.04
             rid: linux-x64
             target: x86_64-unknown-linux-gnu
           - library: libeth_pairings.dylib
-            os: macos
+            os: macos-latest
             rid: osx-arm64
             target: aarch64-apple-darwin
           - library: libeth_pairings.dylib
-            os: macos
+            os: macos-latest
             rid: osx-x64
             target: x86_64-apple-darwin
           - library: eth_pairings.dll
-            os: windows
+            os: windows-latest
             rid: win-x64
             target: x86_64-pc-windows-msvc
-    runs-on: ${{ matrix.os }}-latest
+    runs-on: ${{ matrix.os }}
     steps:
       - name: Check out eip1962 repository
         uses: actions/checkout@v3
