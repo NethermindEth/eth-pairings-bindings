@@ -10,8 +10,10 @@ public static class Pairings
 {
     private const string LibraryName = "eth_pairings";
 
-    static Pairings() => NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadLibrary);
+    public static void TryLoadAndResolveDlls() => LoadLibrary(LibraryName, Assembly.GetExecutingAssembly());
 
+    static Pairings() => NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadLibrary);
+    
     [DllImport(LibraryName)]
     private static extern unsafe uint eip196_perform_operation(
         byte operation,
@@ -92,7 +94,7 @@ public static class Pairings
 
     public static bool BlsMapToG2(ReadOnlySpan<byte> input, Span<byte> output) => BlsOp(9, input, output);
 
-    private static nint LoadLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+    private static nint LoadLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath = null)
     {
         string platform;
 
