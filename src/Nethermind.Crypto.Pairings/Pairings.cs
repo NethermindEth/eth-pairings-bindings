@@ -3,6 +3,7 @@
 
 using System.Runtime.InteropServices;
 using System.Reflection;
+using System.Runtime.Loader;
 
 namespace Nethermind.Crypto;
 
@@ -11,7 +12,7 @@ public static class Pairings
     private const string LibraryName = "eth_pairings";
     private static string? _libraryFallbackPath;
 
-    static Pairings() => NativeLibrary.SetDllImportResolver(Assembly.GetExecutingAssembly(), LoadLibrary);
+    static Pairings() => AssemblyLoadContext.Default.ResolvingUnmanagedDll += OnResolvingUnmanagedDll;
 
     [DllImport(LibraryName)]
     private static extern unsafe uint eip196_perform_operation(
@@ -93,28 +94,25 @@ public static class Pairings
 
     public static bool BlsMapToG2(ReadOnlySpan<byte> input, Span<byte> output) => BlsOp(9, input, output);
 
-    private static nint LoadLibrary(string libraryName, Assembly assembly, DllImportSearchPath? searchPath)
+    private static nint OnResolvingUnmanagedDll(Assembly context, string name)
     {
         if (_libraryFallbackPath is null)
         {
-            if (NativeLibrary.TryLoad(libraryName, assembly, searchPath, out var handle))
-                return handle;
-        
             string platform;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
             {
-                libraryName = $"lib{libraryName}.so";
+                name = $"lib{name}.so";
                 platform = "linux";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
-                libraryName = $"lib{libraryName}.dylib";
+                name = $"lib{name}.dylib";
                 platform = "osx";
             }
             else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                libraryName = $"{libraryName}.dll";
+                name = $"{name}.dll";
                 platform = "win";
             }
             else
@@ -122,9 +120,9 @@ public static class Pairings
 
             var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
 
-            _libraryFallbackPath = Path.Combine("runtimes", $"{platform}-{arch}", "native", libraryName);
+            _libraryFallbackPath = Path.Combine("runtimes", $"{platform}-{arch}", "native", name);
         }
 
-        return NativeLibrary.Load(_libraryFallbackPath, assembly, searchPath);
+        return NativeLibrary.Load(_libraryFallbackPath, context, default);
     }
 }
