@@ -100,10 +100,10 @@ public static class Pairings
             return IntPtr.Zero;
         }
 
-        (string? platform, string? extension) =
-            RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ("linux", "so") :
-            RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ("osx", "dylib") :
-            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ("win", "dll") : default;
+        (string? platform, string? name) =
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ("linux", "libeth_pairings.so") :
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ("osx", "libeth_pairings.dylib") :
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ("win", "eth_pairings.dll") : default;
 
         if (platform is null)
         {
@@ -122,6 +122,6 @@ public static class Pairings
             return IntPtr.Zero;
         }
 
-        return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, $"runtimes/{platform}-{arch}/native/{path}.{extension}"));
+        return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, $"runtimes/{platform}-{arch}/native/{name}"));
     }
 }
