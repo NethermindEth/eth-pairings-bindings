@@ -10,9 +10,8 @@ namespace Nethermind.Crypto;
 public static class Pairings
 {
     private const string LibraryName = "eth_pairings";
-    private static string? _libraryFallbackPath;
 
-    static Pairings() => AssemblyLoadContext.Default.ResolvingUnmanagedDll += OnResolvingUnmanagedDll;
+    static Pairings() => SetLibraryFallbackResolver();
 
     [DllImport(LibraryName)]
     private static extern unsafe uint eip196_perform_operation(
@@ -94,10 +93,15 @@ public static class Pairings
 
     public static bool BlsMapToG2(ReadOnlySpan<byte> input, Span<byte> output) => BlsOp(9, input, output);
 
-    private static nint OnResolvingUnmanagedDll(Assembly context, string name)
+    private static void SetLibraryFallbackResolver()
     {
-        if (_libraryFallbackPath is null)
+        var assembly = typeof(Pairings).Assembly;
+
+        AssemblyLoadContext.GetLoadContext(assembly)!.ResolvingUnmanagedDll += (Assembly context, string name) =>
         {
+            if (context != assembly || !LibraryName.Equals(name, StringComparison.Ordinal))
+                return nint.Zero;
+
             string platform;
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
@@ -120,9 +124,7 @@ public static class Pairings
 
             var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
 
-            _libraryFallbackPath = Path.Combine("runtimes", $"{platform}-{arch}", "native", name);
-        }
-
-        return NativeLibrary.Load(_libraryFallbackPath, context, default);
+            return NativeLibrary.Load($"runtimes/{platform}-{arch}/native/{name}", context, DllImportSearchPath.AssemblyDirectory);
+        };
     }
 }
