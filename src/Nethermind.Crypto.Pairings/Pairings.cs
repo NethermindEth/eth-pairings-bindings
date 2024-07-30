@@ -10,7 +10,6 @@ namespace Nethermind.Crypto;
 public static class Pairings
 {
     private const string LibraryName = "eth_pairings";
-    private static string? _libraryFallbackPath;
 
     static Pairings() => AssemblyLoadContext.Default.ResolvingUnmanagedDll += OnResolvingUnmanagedDll;
 
@@ -94,35 +93,35 @@ public static class Pairings
 
     public static bool BlsMapToG2(ReadOnlySpan<byte> input, Span<byte> output) => BlsOp(9, input, output);
 
-    private static nint OnResolvingUnmanagedDll(Assembly context, string name)
+    private static nint OnResolvingUnmanagedDll(Assembly context, string path)
     {
-        if (_libraryFallbackPath is null)
+        if (!path.Equals(LibraryName, StringComparison.OrdinalIgnoreCase))
         {
-            string platform;
-
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Linux))
-            {
-                name = $"lib{name}.so";
-                platform = "linux";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
-            {
-                name = $"lib{name}.dylib";
-                platform = "osx";
-            }
-            else if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
-            {
-                name = $"{name}.dll";
-                platform = "win";
-            }
-            else
-                throw new PlatformNotSupportedException();
-
-            var arch = RuntimeInformation.ProcessArchitecture.ToString().ToLowerInvariant();
-
-            _libraryFallbackPath = Path.Combine("runtimes", $"{platform}-{arch}", "native", name);
+            return IntPtr.Zero;
         }
 
-        return NativeLibrary.Load(_libraryFallbackPath, context, default);
+        (string? platform, string? extension) =
+            RuntimeInformation.IsOSPlatform(OSPlatform.Linux) ? ("linux", "so") :
+            RuntimeInformation.IsOSPlatform(OSPlatform.OSX) ? ("osx", "dylib") :
+            RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? ("win", "dll") : default;
+
+        if (platform is null)
+        {
+            return IntPtr.Zero;
+        }
+
+        string? arch = RuntimeInformation.ProcessArchitecture switch
+        {
+            Architecture.X64 => "x64",
+            Architecture.Arm64 => "arm64",
+            _ => null,
+        };
+
+        if (arch is null)
+        {
+            return IntPtr.Zero;
+        }
+
+        return NativeLibrary.Load(Path.Combine(AppContext.BaseDirectory, $"runtimes/{platform}-{arch}/native/{path}.{extension}"));
     }
 }
