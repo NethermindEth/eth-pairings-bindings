@@ -20,7 +20,7 @@ jobs:
           - library: libeth_pairings.so
             os: ubuntu-22.04
             rid: linux-riscv32
-            target: riscv32im-unknown-none-elf
+            target: riscv32im-risc0-zkvm-elf
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out eip1962 repository
@@ -35,7 +35,7 @@ jobs:
 
       - name: Set up Rust
         run: |
-          curl -sL https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.11.22/riscv32-elf-ubuntu-22.04-gcc-nightly-2024.11.22-nightly.tar.xz -o riscv32.tar.xz
+          curl -sL https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.11.22/riscv32-glibc-ubuntu-22.04-gcc-nightly-2024.11.22-nightly.tar.xz -o riscv32.tar.xz
           sudo mkdir -p /opt/riscv32
           sudo tar xf riscv32.tar.xz -C /opt/riscv32/
           export PATH=/opt/riscv32/riscv/bin:$PATH
