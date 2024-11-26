@@ -20,7 +20,7 @@ jobs:
           - library: libeth_pairings.so
             os: ubuntu-22.04
             rid: linux-riscv32
-            target: riscv32im-unknown-none-elf
+            target: riscv32imac-unknown-none-elf
     runs-on: ${{ matrix.os }}
     steps:
       - name: Check out eip1962 repository
