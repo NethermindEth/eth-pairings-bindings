@@ -35,7 +35,10 @@ jobs:
 
       - name: Set up Rust
         run: |
-
+          curl -sL https://github.com/riscv-collab/riscv-gnu-toolchain/releases/download/2024.11.22/riscv64-glibc-ubuntu-22.04-gcc-nightly-2024.11.22-nightly.tar.xz -o riscv32.tar.xz
+          sudo mkdir -p /opt/riscv32
+          sudo tar xf riscv32.tar.xz -C /opt/riscv32/
+          export PATH=/opt/riscv32/riscv/bin:$PATH
           rustup update
           rustup target add ${{ matrix.target }}
 
