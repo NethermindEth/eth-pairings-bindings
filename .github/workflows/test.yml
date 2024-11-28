@@ -40,11 +40,11 @@ jobs:
           sudo tar xf riscv32.tar.xz -C /opt/riscv32/
           export PATH=/opt/riscv32/riscv/bin:$PATH
           rustup update
-          rustup target add ${{ matrix.target }}
+          rustup target add ${{ matrix.target }} --channel unstable
 
       - name: Build
         working-directory: eth_pairings
-        run: cargo build --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
+        run: cargo build -Zbuild-std="core,alloc" --release --target ${{ matrix.target }} --features eip_196_c_api,eip_2357_c_api
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
