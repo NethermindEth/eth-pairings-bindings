@@ -41,6 +41,7 @@ jobs:
           export PATH=/opt/riscv32/riscv/bin:$PATH
           rustup update
           rustup override set nightly
+          rustup component add rust-src --toolchain riscv32im-unknown-none-elf
           rustup target add ${{ matrix.target }}
 
       - name: Build
