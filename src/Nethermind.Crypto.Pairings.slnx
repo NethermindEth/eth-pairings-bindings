@@ -1,0 +1,8 @@
+<Solution>
+  <Folder Name="/Solution Items/">
+    <File Path="Directory.Build.props" />
+    <File Path="Directory.Packages.props" />
+  </Folder>
+  <Project Path="Nethermind.Crypto.Pairings.Tests/Nethermind.Crypto.Pairings.Tests.csproj" />
+  <Project Path="Nethermind.Crypto.Pairings/Nethermind.Crypto.Pairings.csproj" />
+</Solution>
