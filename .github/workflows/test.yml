@@ -101,7 +101,7 @@ jobs:
 
       - name: Build
         working-directory: src/Nethermind.Crypto.Pairings
-        run: dotnet build -c ${{ env.BUILD_CONFIG }} --no-restore
+        run: dotnet build -c ${{ env.BUILD_CONFIG }} --no-restore -p:Commit=$GITHUB_SHA
     
       - name: Test
         working-directory: src/Nethermind.Crypto.Pairings.Tests
