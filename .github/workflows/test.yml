@@ -9,7 +9,7 @@ on:
       publish:
         default: false
         description: Publish package
-        required: false 
+        required: false
         type: boolean
 
 jobs:
@@ -44,7 +44,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           repository: nethermindeth/eip1962
-          ref: feature/bindings
           path: eth_pairings
 
       - name: Set up GNU C compiler for arm64
@@ -102,7 +101,7 @@ jobs:
       - name: Build
         working-directory: src/Nethermind.Crypto.Pairings
         run: dotnet build -c ${{ env.BUILD_CONFIG }} --no-restore -p:Commit=$GITHUB_SHA
-    
+
       - name: Test
         working-directory: src/Nethermind.Crypto.Pairings.Tests
         run: dotnet run -c ${{ env.BUILD_CONFIG }} --no-restore
